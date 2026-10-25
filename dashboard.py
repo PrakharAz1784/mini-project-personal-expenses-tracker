@@ -20,6 +20,16 @@ from reports import ReportManager
 
 
 # ============================================================
+# COLORS
+# ============================================================
+
+BG = "#f5f7fb"
+SIDEBAR_BG = "#111827"
+DARK_TEXT = "#111827"
+GRAY_TEXT = "#6b7280"
+
+
+# ============================================================
 # DASHBOARD
 # ============================================================
 
@@ -28,68 +38,20 @@ class Dashboard:
     def __init__(self, root):
 
         self.root = root
-
-        self.root.title(
-            "Personal Expense Tracker"
-        )
-
-        self.root.geometry(
-            "1250x750"
-        )
-
-        self.root.minsize(
-            1000,
-            650
-        )
-
-        self.root.configure(
-            bg="#f5f7fb"
-        )
-
-        # ----------------------------------------------------
-        # STYLE
-        # ----------------------------------------------------
+        self.root.title("Personal Expense Tracker")
+        self.root.geometry("1250x750")
+        self.root.minsize(1000, 650)
+        self.root.configure(bg=BG)
 
         self.setup_style()
 
-        # ----------------------------------------------------
-        # MAIN CONTAINER
-        # ----------------------------------------------------
-
-        self.main_container = tk.Frame(
-            self.root,
-            bg="#f5f7fb"
-        )
-
-        self.main_container.pack(
-            fill="both",
-            expand=True
-        )
-
-        # ----------------------------------------------------
-        # SIDEBAR
-        # ----------------------------------------------------
+        self.main_container = tk.Frame(self.root, bg=BG)
+        self.main_container.pack(fill="both", expand=True)
 
         self.create_sidebar()
 
-        # ----------------------------------------------------
-        # CONTENT
-        # ----------------------------------------------------
-
-        self.content = tk.Frame(
-            self.main_container,
-            bg="#f5f7fb"
-        )
-
-        self.content.pack(
-            side="right",
-            fill="both",
-            expand=True
-        )
-
-        # ----------------------------------------------------
-        # SHOW DASHBOARD
-        # ----------------------------------------------------
+        self.content = tk.Frame(self.main_container, bg=BG)
+        self.content.pack(side="right", fill="both", expand=True)
 
         self.show_dashboard()
 
@@ -107,27 +69,10 @@ class Dashboard:
         except tk.TclError:
             pass
 
-        style.configure(
-            "Treeview",
-            rowheight=32,
-            font=("Segoe UI", 10)
-        )
-
-        style.configure(
-            "Treeview.Heading",
-            font=("Segoe UI", 10, "bold")
-        )
-
-        style.configure(
-            "TButton",
-            font=("Segoe UI", 10),
-            padding=8
-        )
-
-        style.configure(
-            "TCombobox",
-            padding=5
-        )
+        style.configure("Treeview", rowheight=32, font=("Segoe UI", 10))
+        style.configure("Treeview.Heading", font=("Segoe UI", 10, "bold"))
+        style.configure("TButton", font=("Segoe UI", 10), padding=8)
+        style.configure("TCombobox", padding=5)
 
 
     # ========================================================
@@ -138,137 +83,58 @@ class Dashboard:
 
         self.sidebar = tk.Frame(
             self.main_container,
-            bg="#111827",
+            bg=SIDEBAR_BG,
             width=230
         )
+        self.sidebar.pack(side="left", fill="y")
+        self.sidebar.pack_propagate(False)
 
-        self.sidebar.pack(
-            side="left",
-            fill="y"
-        )
-
-        self.sidebar.pack_propagate(
-            False
-        )
-
-
-        # ----------------------------------------------------
-        # LOGO
-        # ----------------------------------------------------
-
-        logo_frame = tk.Frame(
-            self.sidebar,
-            bg="#111827",
-            height=100
-        )
-
-        logo_frame.pack(
-            fill="x"
-        )
-
+        # Logo
+        logo_frame = tk.Frame(self.sidebar, bg=SIDEBAR_BG, height=100)
+        logo_frame.pack(fill="x")
 
         tk.Label(
-            logo_frame,
-            text="💰",
+            logo_frame, text="💰",
             font=("Segoe UI Emoji", 28),
-            bg="#111827",
-            fg="white"
-        ).pack(
-            pady=(15, 0)
-        )
-
+            bg=SIDEBAR_BG, fg="white"
+        ).pack(pady=(15, 0))
 
         tk.Label(
-            logo_frame,
-            text="Expense Tracker",
+            logo_frame, text="Expense Tracker",
             font=("Segoe UI", 15, "bold"),
-            bg="#111827",
-            fg="white"
+            bg=SIDEBAR_BG, fg="white"
         ).pack()
 
-
         tk.Label(
-            logo_frame,
-            text="Personal Finance",
+            logo_frame, text="Personal Finance",
             font=("Segoe UI", 9),
-            bg="#111827",
-            fg="#9ca3af"
-        ).pack(
-            pady=(0, 10)
-        )
+            bg=SIDEBAR_BG, fg="#9ca3af"
+        ).pack(pady=(0, 10))
+
+        # Navigation
+        for text, command in [
+            ("🏠  Dashboard", self.show_dashboard),
+            ("💸  Expenses", self.show_expenses),
+            ("💰  Income", self.show_income),
+            ("📊  Charts", self.show_charts),
+            ("📋  Reports", self.show_reports),
+        ]:
+            self.create_nav_button(text, command)
+
+        # Spacer pushes Exit to the bottom
+        tk.Frame(self.sidebar, bg=SIDEBAR_BG).pack(fill="both", expand=True)
+
+        self.create_nav_button("❌  Exit", self.exit_application)
 
 
-        # ----------------------------------------------------
-        # NAVIGATION
-        # ----------------------------------------------------
-
-        self.create_nav_button(
-            "🏠  Dashboard",
-            self.show_dashboard
-        )
-
-        self.create_nav_button(
-            "💸  Expenses",
-            self.show_expenses
-        )
-
-        self.create_nav_button(
-            "💰  Income",
-            self.show_income
-        )
-
-        self.create_nav_button(
-            "📊  Charts",
-            self.show_charts
-        )
-
-        self.create_nav_button(
-            "📋  Reports",
-            self.show_reports
-        )
-
-
-        # ----------------------------------------------------
-        # SPACER
-        # ----------------------------------------------------
-
-        spacer = tk.Frame(
-            self.sidebar,
-            bg="#111827"
-        )
-
-        spacer.pack(
-            fill="both",
-            expand=True
-        )
-
-
-        # ----------------------------------------------------
-        # EXIT
-        # ----------------------------------------------------
-
-        self.create_nav_button(
-            "❌  Exit",
-            self.exit_application
-        )
-
-
-    # ========================================================
-    # NAVIGATION BUTTON
-    # ========================================================
-
-    def create_nav_button(
-        self,
-        text,
-        command
-    ):
+    def create_nav_button(self, text, command):
 
         button = tk.Button(
             self.sidebar,
             text=text,
             command=command,
             font=("Segoe UI", 11),
-            bg="#111827",
+            bg=SIDEBAR_BG,
             fg="#d1d5db",
             activebackground="#374151",
             activeforeground="white",
@@ -279,23 +145,25 @@ class Dashboard:
             pady=13,
             cursor="hand2"
         )
-
-        button.pack(
-            fill="x"
-        )
+        button.pack(fill="x")
 
         return button
 
 
     # ========================================================
-    # CLEAR CONTENT
+    # PAGE HELPERS
     # ========================================================
 
     def clear_content(self):
 
         for widget in self.content.winfo_children():
-
             widget.destroy()
+
+
+    def show_page(self, page_class):
+
+        self.clear_content()
+        page_class(self.content)
 
 
     # ========================================================
@@ -306,163 +174,48 @@ class Dashboard:
 
         self.clear_content()
 
-        # ----------------------------------------------------
-        # HEADER
-        # ----------------------------------------------------
-
-        header = tk.Frame(
-            self.content,
-            bg="#f5f7fb"
-        )
-
-        header.pack(
-            fill="x",
-            padx=25,
-            pady=(20, 10)
-        )
-
+        # Header
+        header = tk.Frame(self.content, bg=BG)
+        header.pack(fill="x", padx=25, pady=(20, 10))
 
         tk.Label(
-            header,
-            text="Dashboard",
+            header, text="Dashboard",
             font=("Segoe UI", 25, "bold"),
-            bg="#f5f7fb",
-            fg="#111827"
-        ).pack(
-            side="left"
-        )
-
+            bg=BG, fg=DARK_TEXT
+        ).pack(side="left")
 
         tk.Button(
-            header,
-            text="🔄 Refresh",
+            header, text="🔄 Refresh",
             command=self.show_dashboard,
             font=("Segoe UI", 10),
-            bg="white",
-            fg="#374151",
-            bd=1,
-            relief="solid",
-            padx=15,
-            pady=7,
+            bg="white", fg="#374151",
+            bd=1, relief="solid",
+            padx=15, pady=7,
             cursor="hand2"
-        ).pack(
-            side="right"
-        )
-
-
-        today = datetime.now().strftime(
-            "%d %B %Y"
-        )
-
+        ).pack(side="right")
 
         tk.Label(
-            header,
-            text=today,
+            header, text=datetime.now().strftime("%d %B %Y"),
             font=("Segoe UI", 10),
-            bg="#f5f7fb",
-            fg="#6b7280"
-        ).pack(
-            side="right",
-            padx=15
-        )
+            bg=BG, fg=GRAY_TEXT
+        ).pack(side="right", padx=15)
 
-
-        # ----------------------------------------------------
-        # STAT CARDS
-        # ----------------------------------------------------
-
+        # Stat cards
         self.create_stat_cards()
 
+        # Lower area: monthly summary (left), recent transactions (right)
+        lower = tk.Frame(self.content, bg=BG)
+        lower.pack(fill="both", expand=True, padx=25, pady=15)
 
-        # ----------------------------------------------------
-        # LOWER AREA
-        # ----------------------------------------------------
-
-        lower = tk.Frame(
-            self.content,
-            bg="#f5f7fb"
+        left = self.create_panel(
+            lower, "Monthly Financial Summary", "left", (0, 10)
         )
+        self.create_monthly_table(left)
 
-        lower.pack(
-            fill="both",
-            expand=True,
-            padx=25,
-            pady=15
+        right = self.create_panel(
+            lower, "Recent Transactions", "right", (10, 0)
         )
-
-
-        # ----------------------------------------------------
-        # LEFT: MONTHLY SUMMARY
-        # ----------------------------------------------------
-
-        left = tk.Frame(
-            lower,
-            bg="white",
-            bd=1,
-            relief="solid"
-        )
-
-        left.pack(
-            side="left",
-            fill="both",
-            expand=True,
-            padx=(0, 10)
-        )
-
-
-        tk.Label(
-            left,
-            text="Monthly Financial Summary",
-            font=("Segoe UI", 13, "bold"),
-            bg="white",
-            fg="#111827"
-        ).pack(
-            anchor="w",
-            padx=15,
-            pady=15
-        )
-
-
-        self.create_monthly_table(
-            left
-        )
-
-
-        # ----------------------------------------------------
-        # RIGHT: RECENT TRANSACTIONS
-        # ----------------------------------------------------
-
-        right = tk.Frame(
-            lower,
-            bg="white",
-            bd=1,
-            relief="solid"
-        )
-
-        right.pack(
-            side="right",
-            fill="both",
-            expand=True,
-            padx=(10, 0)
-        )
-
-
-        tk.Label(
-            right,
-            text="Recent Transactions",
-            font=("Segoe UI", 13, "bold"),
-            bg="white",
-            fg="#111827"
-        ).pack(
-            anchor="w",
-            padx=15,
-            pady=15
-        )
-
-
-        self.create_recent_transactions(
-            right
-        )
+        self.create_recent_transactions(right)
 
 
     # ========================================================
@@ -472,387 +225,166 @@ class Dashboard:
     def create_stat_cards(self):
 
         income = get_total_income()
-
         expense = get_total_expense()
-
         balance = get_balance()
-
         monthly_expense = get_current_month_expense()
 
+        savings_rate = ((income - expense) / income) * 100 if income > 0 else 0
 
-        # Savings rate
+        cards = tk.Frame(self.content, bg=BG)
+        cards.pack(fill="x", padx=25, pady=10)
 
-        if income > 0:
-
-            savings_rate = (
-                (income - expense)
-                / income
-            ) * 100
-
-        else:
-
-            savings_rate = 0
-
-
-        cards = tk.Frame(
-            self.content,
-            bg="#f5f7fb"
-        )
-
-        cards.pack(
-            fill="x",
-            padx=25,
-            pady=10
-        )
+        for icon, title, value, accent in [
+            ("💰", "Total Income", f"₹{income:,.2f}", "#16a34a"),
+            ("💸", "Total Expenses", f"₹{expense:,.2f}", "#dc2626"),
+            ("💵", "Current Balance", f"₹{balance:,.2f}", "#2563eb"),
+            ("📅", "This Month", f"₹{monthly_expense:,.2f}", "#9333ea"),
+            ("📈", "Savings Rate", f"{savings_rate:.1f}%", "#0891b2"),
+        ]:
+            self.create_card(cards, icon, title, value, accent)
 
 
-        self.create_card(
-            cards,
-            "💰",
-            "Total Income",
-            f"₹{income:,.2f}",
-            "#16a34a"
-        )
-
-
-        self.create_card(
-            cards,
-            "💸",
-            "Total Expenses",
-            f"₹{expense:,.2f}",
-            "#dc2626"
-        )
-
-
-        self.create_card(
-            cards,
-            "💵",
-            "Current Balance",
-            f"₹{balance:,.2f}",
-            "#2563eb"
-        )
-
-
-        self.create_card(
-            cards,
-            "📅",
-            "This Month",
-            f"₹{monthly_expense:,.2f}",
-            "#9333ea"
-        )
-
-
-        self.create_card(
-            cards,
-            "📈",
-            "Savings Rate",
-            f"{savings_rate:.1f}%",
-            "#0891b2"
-        )
-
-
-    # ========================================================
-    # STAT CARD
-    # ========================================================
-
-    def create_card(
-        self,
-        parent,
-        icon,
-        title,
-        value,
-        accent
-    ):
+    def create_card(self, parent, icon, title, value, accent):
 
         card = tk.Frame(
             parent,
-            bg="white",
-            bd=1,
-            relief="solid",
-            padx=15,
-            pady=12
+            bg="white", bd=1, relief="solid",
+            padx=15, pady=12
         )
+        card.pack(side="left", fill="both", expand=True, padx=5)
 
-        card.pack(
-            side="left",
-            fill="both",
-            expand=True,
-            padx=5
-        )
-
-
-        top = tk.Frame(
-            card,
-            bg="white"
-        )
-
-        top.pack(
-            fill="x"
-        )
-
+        top = tk.Frame(card, bg="white")
+        top.pack(fill="x")
 
         tk.Label(
-            top,
-            text=icon,
+            top, text=icon,
             font=("Segoe UI Emoji", 18),
             bg="white"
-        ).pack(
-            side="left"
-        )
-
+        ).pack(side="left")
 
         tk.Label(
-            top,
-            text=title,
+            top, text=title,
             font=("Segoe UI", 10, "bold"),
-            fg="#6b7280",
-            bg="white"
-        ).pack(
-            side="left",
-            padx=8
-        )
-
+            fg=GRAY_TEXT, bg="white"
+        ).pack(side="left", padx=8)
 
         tk.Label(
-            card,
-            text=value,
+            card, text=value,
             font=("Segoe UI", 19, "bold"),
-            fg=accent,
-            bg="white"
-        ).pack(
-            anchor="w",
-            pady=(10, 2)
-        )
+            fg=accent, bg="white"
+        ).pack(anchor="w", pady=(10, 2))
 
 
     # ========================================================
-    # MONTHLY TABLE
+    # PANELS AND TABLES
     # ========================================================
 
-    def create_monthly_table(
-        self,
-        parent
-    ):
+    def create_panel(self, parent, title, side, padx):
+        """White box with a bold title; returns the frame to fill."""
 
-        columns = (
-            "Month",
-            "Income",
-            "Expense",
-            "Balance"
-        )
+        panel = tk.Frame(parent, bg="white", bd=1, relief="solid")
+        panel.pack(side=side, fill="both", expand=True, padx=padx)
 
+        tk.Label(
+            panel, text=title,
+            font=("Segoe UI", 13, "bold"),
+            bg="white", fg=DARK_TEXT
+        ).pack(anchor="w", padx=15, pady=15)
 
-        tree = ttk.Treeview(
-            parent,
-            columns=columns,
-            show="headings"
-        )
+        return panel
 
 
-        for column in columns:
+    def create_table(self, parent, columns, rows):
+        """
+        columns: list of (name, width, anchor)
+        rows:    list of value tuples to insert
+        """
 
-            tree.heading(
-                column,
-                text=column
-            )
+        names = [name for name, _, _ in columns]
 
+        tree = ttk.Treeview(parent, columns=names, show="headings")
 
-        tree.column(
-            "Month",
-            width=100
-        )
+        for name, width, anchor in columns:
+            tree.heading(name, text=name)
+            tree.column(name, width=width, anchor=anchor)
 
-        tree.column(
-            "Income",
-            width=120,
-            anchor="e"
-        )
+        tree.pack(fill="both", expand=True, padx=15, pady=(0, 15))
 
-        tree.column(
-            "Expense",
-            width=120,
-            anchor="e"
-        )
+        for values in rows:
+            tree.insert("", "end", values=values)
 
-        tree.column(
-            "Balance",
-            width=120,
-            anchor="e"
-        )
+        return tree
 
 
-        tree.pack(
-            fill="both",
-            expand=True,
-            padx=15,
-            pady=(0, 15)
-        )
+    def create_monthly_table(self, parent):
 
+        # Latest months first, max 8
+        data = list(get_monthly_summary())[::-1][:8]
 
-        data = get_monthly_summary()
+        rows = []
 
-
-        # Show latest months first
-
-        data = list(data)[::-1]
-
-
-        for row in data[:8]:
-
+        for row in data:
             income = row["income"] or 0
-
             expense = row["expense"] or 0
 
-            balance = income - expense
+            rows.append((
+                row["month"],
+                f"₹{income:,.2f}",
+                f"₹{expense:,.2f}",
+                f"₹{income - expense:,.2f}"
+            ))
 
-
-            tree.insert(
-                "",
-                "end",
-                values=(
-                    row["month"],
-                    f"₹{income:,.2f}",
-                    f"₹{expense:,.2f}",
-                    f"₹{balance:,.2f}"
-                )
-            )
-
-
-    # ========================================================
-    # RECENT TRANSACTIONS
-    # ========================================================
-
-    def create_recent_transactions(
-        self,
-        parent
-    ):
-
-        columns = (
-            "Date",
-            "Type",
-            "Category",
-            "Amount"
-        )
-
-
-        tree = ttk.Treeview(
+        self.create_table(
             parent,
-            columns=columns,
-            show="headings"
+            [
+                ("Month", 100, "w"),
+                ("Income", 120, "e"),
+                ("Expense", 120, "e"),
+                ("Balance", 120, "e"),
+            ],
+            rows
         )
 
 
-        for column in columns:
+    def create_recent_transactions(self, parent):
 
-            tree.heading(
-                column,
-                text=column
+        rows = [
+            (
+                t["date"],
+                t["type"],
+                t["category"],
+                f"₹{t['amount']:,.2f}"
             )
+            for t in get_recent_transactions(10)
+        ]
 
-
-        tree.column(
-            "Date",
-            width=100,
-            anchor="center"
+        self.create_table(
+            parent,
+            [
+                ("Date", 100, "center"),
+                ("Type", 90, "center"),
+                ("Category", 130, "w"),
+                ("Amount", 120, "e"),
+            ],
+            rows
         )
-
-        tree.column(
-            "Type",
-            width=90,
-            anchor="center"
-        )
-
-        tree.column(
-            "Category",
-            width=130
-        )
-
-        tree.column(
-            "Amount",
-            width=120,
-            anchor="e"
-        )
-
-
-        tree.pack(
-            fill="both",
-            expand=True,
-            padx=15,
-            pady=(0, 15)
-        )
-
-
-        transactions = get_recent_transactions(
-            10
-        )
-
-
-        for transaction in transactions:
-
-            amount = transaction["amount"]
-
-            tree.insert(
-                "",
-                "end",
-                values=(
-                    transaction["date"],
-                    transaction["type"],
-                    transaction["category"],
-                    f"₹{amount:,.2f}"
-                )
-            )
 
 
     # ========================================================
-    # EXPENSE PAGE
+    # OTHER PAGES
     # ========================================================
 
     def show_expenses(self):
-
-        self.clear_content()
-
-        ExpenseManager(
-            self.content
-        )
-
-
-    # ========================================================
-    # INCOME PAGE
-    # ========================================================
+        self.show_page(ExpenseManager)
 
     def show_income(self):
-
-        self.clear_content()
-
-        IncomeManager(
-            self.content
-        )
-
-
-    # ========================================================
-    # CHARTS PAGE
-    # ========================================================
+        self.show_page(IncomeManager)
 
     def show_charts(self):
-
-        self.clear_content()
-
-        ChartManager(
-            self.content
-        )
-
-
-    # ========================================================
-    # REPORTS PAGE
-    # ========================================================
+        self.show_page(ChartManager)
 
     def show_reports(self):
-
-        self.clear_content()
-
-        ReportManager(
-            self.content
-        )
+        self.show_page(ReportManager)
 
 
     # ========================================================
@@ -861,13 +393,7 @@ class Dashboard:
 
     def exit_application(self):
 
-        answer = messagebox.askyesno(
-            "Exit",
-            "Are you sure you want to exit?"
-        )
-
-        if answer:
-
+        if messagebox.askyesno("Exit", "Are you sure you want to exit?"):
             self.root.destroy()
 
 
@@ -878,18 +404,9 @@ class Dashboard:
 def start_dashboard():
 
     root = tk.Tk()
-
-    Dashboard(
-        root
-    )
-
+    Dashboard(root)
     root.mainloop()
 
 
-# ============================================================
-# RUN DIRECTLY
-# ============================================================
-
 if __name__ == "__main__":
-
     start_dashboard()

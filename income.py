@@ -13,6 +13,24 @@ from database import (
 
 
 # ============================================================
+# CONSTANTS
+# ============================================================
+
+BG = "#f5f7fb"
+
+INCOME_SOURCES = [
+    "Salary", "Freelance", "Business", "Investment", "Bonus",
+    "Interest", "Gift", "Refund", "Other"
+]
+
+PAYMENT_METHODS = [
+    "Cash", "UPI", "Debit Card", "Credit Card", "Bank Transfer", "Cheque"
+]
+
+DEFAULT_PAYMENT = "Bank Transfer"
+
+
+# ============================================================
 # INCOME MANAGEMENT
 # ============================================================
 
@@ -23,46 +41,19 @@ class IncomeManager:
         self.parent = parent
         self.selected_id = None
 
-        # ----------------------------------------------------
-        # MAIN FRAME
-        # ----------------------------------------------------
+        self.window = tk.Frame(parent, bg=BG)
+        self.window.pack(fill="both", expand=True)
 
-        self.window = tk.Frame(
-            parent,
-            bg="#f5f7fb"
-        )
-
-        self.window.pack(
-            fill="both",
-            expand=True
-        )
-
-        # ----------------------------------------------------
-        # VARIABLES
-        # ----------------------------------------------------
-
-        self.date_var = tk.StringVar(
-            value=str(date.today())
-        )
-
+        # Form variables
+        self.date_var = tk.StringVar(value=str(date.today()))
         self.source_var = tk.StringVar()
-
         self.amount_var = tk.StringVar()
-
-        self.payment_var = tk.StringVar(
-            value="Bank Transfer"
-        )
-
+        self.payment_var = tk.StringVar(value=DEFAULT_PAYMENT)
         self.description_var = tk.StringVar()
 
-        # ----------------------------------------------------
-        # BUILD INTERFACE
-        # ----------------------------------------------------
-
+        # Build interface
         self.create_header()
-
         self.create_form()
-
         self.create_table()
 
         self.load_income()
@@ -74,27 +65,14 @@ class IncomeManager:
 
     def create_header(self):
 
-        header = tk.Frame(
-            self.window,
-            bg="#1f2937",
-            height=65
-        )
-
-        header.pack(
-            fill="x"
-        )
+        header = tk.Frame(self.window, bg="#1f2937", height=65)
+        header.pack(fill="x")
 
         tk.Label(
-            header,
-            text="INCOME MANAGEMENT",
+            header, text="INCOME MANAGEMENT",
             font=("Segoe UI", 20, "bold"),
-            fg="white",
-            bg="#1f2937"
-        ).pack(
-            side="left",
-            padx=25,
-            pady=15
-        )
+            fg="white", bg="#1f2937"
+        ).pack(side="left", padx=25, pady=15)
 
 
     # ========================================================
@@ -103,261 +81,62 @@ class IncomeManager:
 
     def create_form(self):
 
-        container = tk.Frame(
-            self.window,
-            bg="#f5f7fb"
-        )
-
-        container.pack(
-            fill="x",
-            padx=20,
-            pady=20
-        )
+        container = tk.Frame(self.window, bg=BG)
+        container.pack(fill="x", padx=20, pady=20)
 
         form = tk.LabelFrame(
             container,
             text="Add / Edit Income",
             font=("Segoe UI", 11, "bold"),
             bg="white",
-            padx=15,
-            pady=15
+            padx=15, pady=15
         )
-
-        form.pack(
-            fill="x"
-        )
-
-
-        # ----------------------------------------------------
-        # DATE
-        # ----------------------------------------------------
-
-        tk.Label(
-            form,
-            text="Date",
-            font=("Segoe UI", 10),
-            bg="white"
-        ).grid(
-            row=0,
-            column=0,
-            sticky="w",
-            padx=8,
-            pady=5
-        )
+        form.pack(fill="x")
 
         self.date_entry = ttk.Entry(
-            form,
-            textvariable=self.date_var,
-            width=20
+            form, textvariable=self.date_var, width=20
         )
-
-        self.date_entry.grid(
-            row=1,
-            column=0,
-            padx=8,
-            pady=5
-        )
-
-
-        # ----------------------------------------------------
-        # INCOME SOURCE
-        # ----------------------------------------------------
-
-        tk.Label(
-            form,
-            text="Income Source",
-            font=("Segoe UI", 10),
-            bg="white"
-        ).grid(
-            row=0,
-            column=1,
-            sticky="w",
-            padx=8,
-            pady=5
-        )
-
         self.source_entry = ttk.Combobox(
-            form,
-            textvariable=self.source_var,
-            values=[
-                "Salary",
-                "Freelance",
-                "Business",
-                "Investment",
-                "Bonus",
-                "Interest",
-                "Gift",
-                "Refund",
-                "Other"
-            ],
-            width=18
+            form, textvariable=self.source_var,
+            values=INCOME_SOURCES, width=18
         )
-
-        self.source_entry.grid(
-            row=1,
-            column=1,
-            padx=8,
-            pady=5
-        )
-
-
-        # ----------------------------------------------------
-        # AMOUNT
-        # ----------------------------------------------------
-
-        tk.Label(
-            form,
-            text="Amount",
-            font=("Segoe UI", 10),
-            bg="white"
-        ).grid(
-            row=0,
-            column=2,
-            sticky="w",
-            padx=8,
-            pady=5
-        )
-
         self.amount_entry = ttk.Entry(
-            form,
-            textvariable=self.amount_var,
-            width=20
+            form, textvariable=self.amount_var, width=20
         )
-
-        self.amount_entry.grid(
-            row=1,
-            column=2,
-            padx=8,
-            pady=5
-        )
-
-
-        # ----------------------------------------------------
-        # PAYMENT METHOD
-        # ----------------------------------------------------
-
-        tk.Label(
-            form,
-            text="Payment Method",
-            font=("Segoe UI", 10),
-            bg="white"
-        ).grid(
-            row=0,
-            column=3,
-            sticky="w",
-            padx=8,
-            pady=5
-        )
-
         self.payment_entry = ttk.Combobox(
-            form,
-            textvariable=self.payment_var,
-            values=[
-                "Cash",
-                "UPI",
-                "Debit Card",
-                "Credit Card",
-                "Bank Transfer",
-                "Cheque"
-            ],
-            state="readonly",
-            width=18
+            form, textvariable=self.payment_var,
+            values=PAYMENT_METHODS, state="readonly", width=18
         )
-
-        self.payment_entry.grid(
-            row=1,
-            column=3,
-            padx=8,
-            pady=5
-        )
-
-
-        # ----------------------------------------------------
-        # DESCRIPTION
-        # ----------------------------------------------------
-
-        tk.Label(
-            form,
-            text="Description",
-            font=("Segoe UI", 10),
-            bg="white"
-        ).grid(
-            row=0,
-            column=4,
-            sticky="w",
-            padx=8,
-            pady=5
-        )
-
         self.description_entry = ttk.Entry(
-            form,
-            textvariable=self.description_var,
-            width=25
+            form, textvariable=self.description_var, width=25
         )
 
-        self.description_entry.grid(
-            row=1,
-            column=4,
-            padx=8,
-            pady=5
-        )
+        for column, (label, widget) in enumerate([
+            ("Date", self.date_entry),
+            ("Income Source", self.source_entry),
+            ("Amount", self.amount_entry),
+            ("Payment Method", self.payment_entry),
+            ("Description", self.description_entry),
+        ]):
+            tk.Label(
+                form, text=label, font=("Segoe UI", 10), bg="white"
+            ).grid(row=0, column=column, sticky="w", padx=8, pady=5)
 
+            widget.grid(row=1, column=column, padx=8, pady=5)
 
-        # ----------------------------------------------------
-        # BUTTONS
-        # ----------------------------------------------------
+        # Buttons
+        button_frame = tk.Frame(form, bg="white")
+        button_frame.grid(row=2, column=0, columnspan=5, pady=15)
 
-        button_frame = tk.Frame(
-            form,
-            bg="white"
-        )
-
-        button_frame.grid(
-            row=2,
-            column=0,
-            columnspan=5,
-            pady=15
-        )
-
-
-        ttk.Button(
-            button_frame,
-            text="➕ Add Income",
-            command=self.add_income
-        ).pack(
-            side="left",
-            padx=5
-        )
-
-
-        ttk.Button(
-            button_frame,
-            text="✏ Update",
-            command=self.update_income
-        ).pack(
-            side="left",
-            padx=5
-        )
-
-
-        ttk.Button(
-            button_frame,
-            text="🗑 Delete",
-            command=self.delete_income
-        ).pack(
-            side="left",
-            padx=5
-        )
-
-
-        ttk.Button(
-            button_frame,
-            text="🔄 Clear",
-            command=self.clear_form
-        ).pack(
-            side="left",
-            padx=5
-        )
+        for text, command in [
+            ("➕ Add Income", self.add_income),
+            ("✏ Update", self.update_income),
+            ("🗑 Delete", self.delete_income),
+            ("🔄 Clear", self.clear_form),
+        ]:
+            ttk.Button(
+                button_frame, text=text, command=command
+            ).pack(side="left", padx=5)
 
 
     # ========================================================
@@ -366,132 +145,44 @@ class IncomeManager:
 
     def create_table(self):
 
-        container = tk.Frame(
-            self.window,
-            bg="#f5f7fb"
-        )
-
-        container.pack(
-            fill="both",
-            expand=True,
-            padx=20,
-            pady=(0, 20)
-        )
-
+        container = tk.Frame(self.window, bg=BG)
+        container.pack(fill="both", expand=True, padx=20, pady=(0, 20))
 
         tk.Label(
-            container,
-            text="Income History",
-            font=("Segoe UI", 13, "bold"),
-            bg="#f5f7fb"
-        ).pack(
-            anchor="w",
-            pady=(0, 8)
-        )
+            container, text="Income History",
+            font=("Segoe UI", 13, "bold"), bg=BG
+        ).pack(anchor="w", pady=(0, 8))
 
-
-        columns = (
-            "ID",
-            "Date",
-            "Source",
-            "Amount",
-            "Payment",
-            "Description"
-        )
-
+        # (name, width, anchor)
+        columns = [
+            ("ID", 60, "center"),
+            ("Date", 120, "center"),
+            ("Source", 160, "w"),
+            ("Amount", 130, "e"),
+            ("Payment", 150, "w"),
+            ("Description", 260, "w"),
+        ]
 
         self.tree = ttk.Treeview(
             container,
-            columns=columns,
+            columns=[name for name, _, _ in columns],
             show="headings"
         )
 
+        for name, width, anchor in columns:
+            self.tree.heading(name, text=name)
+            self.tree.column(name, width=width, anchor=anchor)
 
-        # ----------------------------------------------------
-        # HEADINGS
-        # ----------------------------------------------------
-
-        for column in columns:
-
-            self.tree.heading(
-                column,
-                text=column
-            )
-
-
-        # ----------------------------------------------------
-        # COLUMN WIDTHS
-        # ----------------------------------------------------
-
-        self.tree.column(
-            "ID",
-            width=60,
-            anchor="center"
-        )
-
-        self.tree.column(
-            "Date",
-            width=120,
-            anchor="center"
-        )
-
-        self.tree.column(
-            "Source",
-            width=160
-        )
-
-        self.tree.column(
-            "Amount",
-            width=130,
-            anchor="e"
-        )
-
-        self.tree.column(
-            "Payment",
-            width=150
-        )
-
-        self.tree.column(
-            "Description",
-            width=260
-        )
-
-
-        self.tree.pack(
-            side="left",
-            fill="both",
-            expand=True
-        )
-
-
-        # ----------------------------------------------------
-        # SCROLLBAR
-        # ----------------------------------------------------
+        self.tree.pack(side="left", fill="both", expand=True)
 
         scrollbar = ttk.Scrollbar(
-            container,
-            orient="vertical",
-            command=self.tree.yview
+            container, orient="vertical", command=self.tree.yview
         )
+        scrollbar.pack(side="right", fill="y")
 
-        scrollbar.pack(
-            side="right",
-            fill="y"
-        )
+        self.tree.configure(yscrollcommand=scrollbar.set)
 
-        self.tree.configure(
-            yscrollcommand=scrollbar.set
-        )
-
-
-        # ----------------------------------------------------
-        # SELECT EVENT
-        # ----------------------------------------------------
-
-        self.tree.bind(
-            "<<TreeviewSelect>>",
-            self.select_income
-        )
+        self.tree.bind("<<TreeviewSelect>>", self.select_income)
 
 
     # ========================================================
@@ -500,24 +191,10 @@ class IncomeManager:
 
     def load_income(self):
 
-        # Remove old rows
-
         for row in self.tree.get_children():
-
             self.tree.delete(row)
 
-
-        # Get income records
-
-        income_records = get_transactions_by_type(
-            "Income"
-        )
-
-
-        # Add records to table
-
-        for income in income_records:
-
+        for income in get_transactions_by_type("Income"):
             self.tree.insert(
                 "",
                 "end",
@@ -533,107 +210,104 @@ class IncomeManager:
 
 
     # ========================================================
+    # HELPERS
+    # ========================================================
+
+    def read_form(self):
+        """Return (date, source, amount, payment, description) as stripped text."""
+
+        return (
+            self.date_var.get().strip(),
+            self.source_var.get().strip(),
+            self.amount_var.get().strip(),
+            self.payment_var.get().strip(),
+            self.description_var.get().strip(),
+        )
+
+
+    def parse_amount(self, text, error_message):
+        """Return the amount as a positive float, or None after showing an error."""
+
+        try:
+            amount = float(text)
+
+            if amount <= 0:
+                raise ValueError
+
+            return amount
+
+        except ValueError:
+            messagebox.showerror("Invalid Amount", error_message)
+            return None
+
+
+    def run_database(self, function, *args):
+        """Call a database function. Returns (ok, result); shows an error if it fails."""
+
+        try:
+            return True, function(*args)
+
+        except Exception as error:
+            messagebox.showerror("Database Error", str(error))
+            return False, None
+
+
+    def finish(self, success, title, success_message, error_message):
+        """Show the result of an update/delete, then reset the form and table."""
+
+        if success:
+            messagebox.showinfo(title, success_message)
+            self.clear_form()
+            self.load_income()
+        else:
+            messagebox.showerror("Error", error_message)
+
+
+    # ========================================================
     # ADD INCOME
     # ========================================================
 
     def add_income(self):
 
-        transaction_date = self.date_var.get().strip()
-
-        source = self.source_var.get().strip()
-
-        amount = self.amount_var.get().strip()
-
-        payment = self.payment_var.get().strip()
-
-        description = self.description_var.get().strip()
-
-
-        # ----------------------------------------------------
-        # VALIDATION
-        # ----------------------------------------------------
-
-        if not transaction_date:
-
-            messagebox.showwarning(
-                "Missing Date",
-                "Please enter a date."
-            )
-
-            return
-
-
-        if not source:
-
-            messagebox.showwarning(
-                "Missing Source",
-                "Please select an income source."
-            )
-
-            return
-
-
-        if not amount:
-
-            messagebox.showwarning(
-                "Missing Amount",
-                "Please enter an amount."
-            )
-
-            return
-
-
-        try:
-
-            amount = float(amount)
-
-            if amount <= 0:
-
-                raise ValueError
-
-        except ValueError:
-
-            messagebox.showerror(
-                "Invalid Amount",
-                "Please enter a valid positive amount."
-            )
-
-            return
-
-
-        # ----------------------------------------------------
-        # ADD TO DATABASE
-        # ----------------------------------------------------
-
-        try:
-
-            add_transaction(
-                transaction_date,
-                "Income",
-                source,
-                amount,
-                payment,
-                description
-            )
-
-        except Exception as error:
-
-            messagebox.showerror(
-                "Database Error",
-                str(error)
-            )
-
-            return
-
-
-        messagebox.showinfo(
-            "Success",
-            "Income added successfully."
+        transaction_date, source, amount, payment, description = (
+            self.read_form()
         )
 
+        if not transaction_date:
+            messagebox.showwarning("Missing Date", "Please enter a date.")
+            return
+
+        if not source:
+            messagebox.showwarning(
+                "Missing Source", "Please select an income source."
+            )
+            return
+
+        if not amount:
+            messagebox.showwarning(
+                "Missing Amount", "Please enter an amount."
+            )
+            return
+
+        amount = self.parse_amount(
+            amount, "Please enter a valid positive amount."
+        )
+
+        if amount is None:
+            return
+
+        ok, _ = self.run_database(
+            add_transaction,
+            transaction_date, "Income", source,
+            amount, payment, description
+        )
+
+        if not ok:
+            return
+
+        messagebox.showinfo("Success", "Income added successfully.")
 
         self.clear_form()
-
         self.load_income()
 
 
@@ -646,68 +320,22 @@ class IncomeManager:
         selected = self.tree.selection()
 
         if not selected:
-
             return
 
-
-        item = self.tree.item(
-            selected[0]
-        )
-
-        values = item["values"]
-
+        values = self.tree.item(selected[0])["values"]
 
         if not values:
-
             return
-
 
         self.selected_id = values[0]
 
-
-        # Date
-
-        self.date_var.set(
-            values[1]
-        )
-
-
-        # Source
-
-        self.source_var.set(
-            values[2]
-        )
-
-
-        # Amount
-
-        amount = str(
-            values[3]
-        )
-
-        amount = (
-            amount
-            .replace("₹", "")
-            .replace(",", "")
-        )
-
+        self.date_var.set(values[1])
+        self.source_var.set(values[2])
         self.amount_var.set(
-            amount
+            str(values[3]).replace("₹", "").replace(",", "")
         )
-
-
-        # Payment
-
-        self.payment_var.set(
-            values[4]
-        )
-
-
-        # Description
-
-        self.description_var.set(
-            values[5]
-        )
+        self.payment_var.set(values[4])
+        self.description_var.set(values[5])
 
 
     # ========================================================
@@ -717,93 +345,43 @@ class IncomeManager:
     def update_income(self):
 
         if self.selected_id is None:
-
             messagebox.showwarning(
                 "Select Income",
                 "Please select an income record to update."
             )
-
             return
 
-
-        transaction_date = self.date_var.get().strip()
-
-        source = self.source_var.get().strip()
-
-        amount = self.amount_var.get().strip()
-
-        payment = self.payment_var.get().strip()
-
-        description = self.description_var.get().strip()
-
+        transaction_date, source, amount, payment, description = (
+            self.read_form()
+        )
 
         if not transaction_date or not source:
-
             messagebox.showwarning(
                 "Missing Information",
                 "Please enter date and income source."
             )
-
             return
 
+        amount = self.parse_amount(amount, "Please enter a valid amount.")
 
-        try:
-
-            amount = float(amount)
-
-            if amount <= 0:
-
-                raise ValueError
-
-        except ValueError:
-
-            messagebox.showerror(
-                "Invalid Amount",
-                "Please enter a valid amount."
-            )
-
+        if amount is None:
             return
 
+        ok, success = self.run_database(
+            update_transaction,
+            self.selected_id, transaction_date, "Income",
+            source, amount, payment, description
+        )
 
-        try:
-
-            success = update_transaction(
-                self.selected_id,
-                transaction_date,
-                "Income",
-                source,
-                amount,
-                payment,
-                description
-            )
-
-        except Exception as error:
-
-            messagebox.showerror(
-                "Database Error",
-                str(error)
-            )
-
+        if not ok:
             return
 
-
-        if success:
-
-            messagebox.showinfo(
-                "Updated",
-                "Income updated successfully."
-            )
-
-            self.clear_form()
-
-            self.load_income()
-
-        else:
-
-            messagebox.showerror(
-                "Error",
-                "Income could not be updated."
-            )
+        self.finish(
+            success,
+            "Updated",
+            "Income updated successfully.",
+            "Income could not be updated."
+        )
 
 
     # ========================================================
@@ -813,59 +391,31 @@ class IncomeManager:
     def delete_income(self):
 
         if self.selected_id is None:
-
             messagebox.showwarning(
                 "Select Income",
                 "Please select an income record to delete."
             )
-
             return
-
 
         confirm = messagebox.askyesno(
             "Confirm Delete",
             "Are you sure you want to delete this income?"
         )
 
-
         if not confirm:
-
             return
 
+        ok, success = self.run_database(delete_transaction, self.selected_id)
 
-        try:
-
-            success = delete_transaction(
-                self.selected_id
-            )
-
-        except Exception as error:
-
-            messagebox.showerror(
-                "Database Error",
-                str(error)
-            )
-
+        if not ok:
             return
 
-
-        if success:
-
-            messagebox.showinfo(
-                "Deleted",
-                "Income deleted successfully."
-            )
-
-            self.clear_form()
-
-            self.load_income()
-
-        else:
-
-            messagebox.showerror(
-                "Error",
-                "Income could not be deleted."
-            )
+        self.finish(
+            success,
+            "Deleted",
+            "Income deleted successfully.",
+            "Income could not be deleted."
+        )
 
 
     # ========================================================
@@ -876,31 +426,14 @@ class IncomeManager:
 
         self.selected_id = None
 
-        self.date_var.set(
-            str(date.today())
-        )
-
-        self.source_var.set(
-            ""
-        )
-
-        self.amount_var.set(
-            ""
-        )
-
-        self.payment_var.set(
-            "Bank Transfer"
-        )
-
-        self.description_var.set(
-            ""
-        )
-
+        self.date_var.set(str(date.today()))
+        self.source_var.set("")
+        self.amount_var.set("")
+        self.payment_var.set(DEFAULT_PAYMENT)
+        self.description_var.set("")
 
         # Clear table selection
-
         for item in self.tree.selection():
-
             self.tree.selection_remove(item)
 
 
@@ -911,14 +444,8 @@ class IncomeManager:
 if __name__ == "__main__":
 
     root = tk.Tk()
-
-    root.title(
-        "Income Management"
-    )
-
-    root.geometry(
-        "1100x650"
-    )
+    root.title("Income Management")
+    root.geometry("1100x650")
 
     IncomeManager(root)
 

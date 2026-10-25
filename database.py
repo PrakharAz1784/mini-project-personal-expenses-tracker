@@ -3,74 +3,75 @@ from pathlib import Path
 
 
 # ============================================================
-# DATABASE CONFIGURATION
+# CONFIGURATION
 # ============================================================
 
 BASE_DIR = Path(__file__).resolve().parent
-
 DATABASE_DIR = BASE_DIR / "database"
-
-DATABASE_DIR.mkdir(
-    parents=True,
-    exist_ok=True
-)
+DATABASE_DIR.mkdir(parents=True, exist_ok=True)
 
 DB_PATH = DATABASE_DIR / "expenses.db"
 
 
 # ============================================================
-# DATABASE CONNECTION
+# HELPERS
 # ============================================================
 
 def get_connection():
-    connection = sqlite3.connect(
-        str(DB_PATH)
-    )
-
+    connection = sqlite3.connect(str(DB_PATH))
     connection.row_factory = sqlite3.Row
-
     return connection
 
 
+def _run(sql, params=(), fetch=None):
+    """
+    Run one SQL statement and close the connection.
+
+    fetch=None  -> write query; returns the cursor (rowcount / lastrowid)
+    fetch="one" -> returns a single row
+    fetch="all" -> returns all rows
+    """
+    connection = get_connection()
+    try:
+        cursor = connection.execute(sql, params)
+
+        if fetch == "one":
+            return cursor.fetchone()
+        if fetch == "all":
+            return cursor.fetchall()
+
+        connection.commit()
+        return cursor.rowcount, cursor.lastrowid
+    finally:
+        connection.close()
+
+
+def _total(sql, params=()):
+    """Run a single-value query (e.g. SUM) and return it as a float."""
+    return float(_run(sql, params, fetch="one")[0])
+
+
 # ============================================================
-# INITIALIZE DATABASE
+# SETUP
 # ============================================================
 
 def initialize_database():
-
-    connection = get_connection()
-
-    cursor = connection.cursor()
-
-    cursor.execute("""
+    _run("""
         CREATE TABLE IF NOT EXISTS transactions (
-
             id INTEGER PRIMARY KEY AUTOINCREMENT,
-
             date TEXT NOT NULL,
-
             type TEXT NOT NULL,
-
             category TEXT NOT NULL,
-
             amount REAL NOT NULL,
-
             payment TEXT DEFAULT '',
-
             description TEXT DEFAULT '',
-
-            created_at TIMESTAMP
-                DEFAULT CURRENT_TIMESTAMP
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )
     """)
 
-    connection.commit()
-
-    connection.close()
-
 
 # ============================================================
-# ADD TRANSACTION
+# ADD / UPDATE / DELETE
 # ============================================================
 
 def add_transaction(
@@ -81,21 +82,9 @@ def add_transaction(
     payment="",
     description=""
 ):
-
-    connection = get_connection()
-
-    cursor = connection.cursor()
-
-    cursor.execute("""
+    _, transaction_id = _run("""
         INSERT INTO transactions
-        (
-            date,
-            type,
-            category,
-            amount,
-            payment,
-            description
-        )
+            (date, type, category, amount, payment, description)
         VALUES (?, ?, ?, ?, ?, ?)
     """, (
         transaction_date,
@@ -105,19 +94,8 @@ def add_transaction(
         payment,
         description
     ))
-
-    connection.commit()
-
-    transaction_id = cursor.lastrowid
-
-    connection.close()
-
     return transaction_id
 
-
-# ============================================================
-# UPDATE TRANSACTION
-# ============================================================
 
 def update_transaction(
     transaction_id,
@@ -128,22 +106,10 @@ def update_transaction(
     payment="",
     description=""
 ):
-
-    connection = get_connection()
-
-    cursor = connection.cursor()
-
-    cursor.execute("""
+    rows_changed, _ = _run("""
         UPDATE transactions
-
-        SET
-            date = ?,
-            type = ?,
-            category = ?,
-            amount = ?,
-            payment = ?,
-            description = ?
-
+        SET date = ?, type = ?, category = ?,
+            amount = ?, payment = ?, description = ?
         WHERE id = ?
     """, (
         transaction_date,
@@ -154,320 +120,114 @@ def update_transaction(
         description,
         transaction_id
     ))
+    return rows_changed > 0
 
-    connection.commit()
-
-    success = cursor.rowcount > 0
-
-    connection.close()
-
-    return success
-
-
-# ============================================================
-# DELETE TRANSACTION
-# ============================================================
 
 def delete_transaction(transaction_id):
-
-    connection = get_connection()
-
-    cursor = connection.cursor()
-
-    cursor.execute("""
-        DELETE FROM transactions
-        WHERE id = ?
-    """, (
-        transaction_id,
-    ))
-
-    connection.commit()
-
-    success = cursor.rowcount > 0
-
-    connection.close()
-
-    return success
+    rows_changed, _ = _run(
+        "DELETE FROM transactions WHERE id = ?",
+        (transaction_id,)
+    )
+    return rows_changed > 0
 
 
 # ============================================================
-# GET SINGLE TRANSACTION
+# READ TRANSACTIONS
 # ============================================================
 
 def get_transaction(transaction_id):
+    return _run(
+        "SELECT * FROM transactions WHERE id = ?",
+        (transaction_id,),
+        fetch="one"
+    )
 
-    connection = get_connection()
-
-    cursor = connection.cursor()
-
-    cursor.execute("""
-        SELECT *
-        FROM transactions
-        WHERE id = ?
-    """, (
-        transaction_id,
-    ))
-
-    transaction = cursor.fetchone()
-
-    connection.close()
-
-    return transaction
-
-
-# ============================================================
-# GET ALL TRANSACTIONS
-# ============================================================
 
 def get_all_transactions():
+    return _run(
+        "SELECT * FROM transactions ORDER BY date DESC, id DESC",
+        fetch="all"
+    )
 
-    connection = get_connection()
-
-    cursor = connection.cursor()
-
-    cursor.execute("""
-        SELECT *
-        FROM transactions
-        ORDER BY date DESC, id DESC
-    """)
-
-    rows = cursor.fetchall()
-
-    connection.close()
-
-    return rows
-
-
-# ============================================================
-# GET TRANSACTIONS BY TYPE
-# ============================================================
 
 def get_transactions_by_type(transaction_type):
-
-    connection = get_connection()
-
-    cursor = connection.cursor()
-
-    cursor.execute("""
-        SELECT *
-        FROM transactions
+    return _run(
+        """
+        SELECT * FROM transactions
         WHERE type = ?
         ORDER BY date DESC, id DESC
-    """, (
-        transaction_type,
-    ))
-
-    rows = cursor.fetchall()
-
-    connection.close()
-
-    return rows
+        """,
+        (transaction_type,),
+        fetch="all"
+    )
 
 
-# ============================================================
-# TOTAL INCOME
-# ============================================================
-
-def get_total_income():
-
-    connection = get_connection()
-
-    cursor = connection.cursor()
-
-    cursor.execute("""
-        SELECT COALESCE(
-            SUM(amount),
-            0
-        )
-
-        FROM transactions
-
-        WHERE type = 'Income'
-    """)
-
-    total = cursor.fetchone()[0]
-
-    connection.close()
-
-    return float(total)
-
-
-# ============================================================
-# TOTAL EXPENSE
-# ============================================================
-
-def get_total_expense():
-
-    connection = get_connection()
-
-    cursor = connection.cursor()
-
-    cursor.execute("""
-        SELECT COALESCE(
-            SUM(amount),
-            0
-        )
-
-        FROM transactions
-
-        WHERE type = 'Expense'
-    """)
-
-    total = cursor.fetchone()[0]
-
-    connection.close()
-
-    return float(total)
-
-
-# ============================================================
-# BALANCE
-# ============================================================
-
-def get_balance():
-
-    return (
-        get_total_income()
-        - get_total_expense()
+def get_recent_transactions(limit=10):
+    return _run(
+        """
+        SELECT * FROM transactions
+        ORDER BY date DESC, id DESC
+        LIMIT ?
+        """,
+        (limit,),
+        fetch="all"
     )
 
 
 # ============================================================
-# CURRENT MONTH EXPENSE
+# TOTALS
 # ============================================================
 
-def get_current_month_expense():
-
-    connection = get_connection()
-
-    cursor = connection.cursor()
-
-    cursor.execute("""
-        SELECT COALESCE(
-            SUM(amount),
-            0
-        )
-
+def get_total_income():
+    return _total("""
+        SELECT COALESCE(SUM(amount), 0)
         FROM transactions
-
-        WHERE type = 'Expense'
-
-        AND strftime(
-            '%Y-%m',
-            date
-        ) = strftime(
-            '%Y-%m',
-            'now'
-        )
+        WHERE type = 'Income'
     """)
 
-    total = cursor.fetchone()[0]
 
-    connection.close()
+def get_total_expense():
+    return _total("""
+        SELECT COALESCE(SUM(amount), 0)
+        FROM transactions
+        WHERE type = 'Expense'
+    """)
 
-    return float(total)
+
+def get_balance():
+    return get_total_income() - get_total_expense()
+
+
+def get_current_month_expense():
+    return _total("""
+        SELECT COALESCE(SUM(amount), 0)
+        FROM transactions
+        WHERE type = 'Expense'
+          AND strftime('%Y-%m', date) = strftime('%Y-%m', 'now')
+    """)
 
 
 # ============================================================
-# EXPENSES BY CATEGORY
+# REPORTS
 # ============================================================
 
 def get_expenses_by_category():
-
-    connection = get_connection()
-
-    cursor = connection.cursor()
-
-    cursor.execute("""
-        SELECT
-            category,
-            SUM(amount) AS total
-
+    return _run("""
+        SELECT category, SUM(amount) AS total
         FROM transactions
-
         WHERE type = 'Expense'
-
         GROUP BY category
-
         ORDER BY total DESC
-    """)
+    """, fetch="all")
 
-    rows = cursor.fetchall()
-
-    connection.close()
-
-    return rows
-
-
-# ============================================================
-# MONTHLY SUMMARY
-# ============================================================
 
 def get_monthly_summary():
-
-    connection = get_connection()
-
-    cursor = connection.cursor()
-
-    cursor.execute("""
+    return _run("""
         SELECT
-
-            strftime(
-                '%Y-%m',
-                date
-            ) AS month,
-
-            SUM(
-                CASE
-                    WHEN type = 'Income'
-                    THEN amount
-                    ELSE 0
-                END
-            ) AS income,
-
-            SUM(
-                CASE
-                    WHEN type = 'Expense'
-                    THEN amount
-                    ELSE 0
-                END
-            ) AS expense
-
+            strftime('%Y-%m', date) AS month,
+            SUM(CASE WHEN type = 'Income'  THEN amount ELSE 0 END) AS income,
+            SUM(CASE WHEN type = 'Expense' THEN amount ELSE 0 END) AS expense
         FROM transactions
-
         GROUP BY month
-
         ORDER BY month ASC
-    """)
-
-    rows = cursor.fetchall()
-
-    connection.close()
-
-    return rows
-
-
-# ============================================================
-# RECENT TRANSACTIONS
-# ============================================================
-
-def get_recent_transactions(limit=10):
-
-    connection = get_connection()
-
-    cursor = connection.cursor()
-
-    cursor.execute("""
-        SELECT *
-        FROM transactions
-        ORDER BY date DESC, id DESC
-        LIMIT ?
-    """, (
-        limit,
-    ))
-
-    rows = cursor.fetchall()
-
-    connection.close()
-
-    return rows
+    """, fetch="all")
